@@ -8,7 +8,7 @@ public abstract class absUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @NotBlank
+
     private String name;
     @Column(name="phone_number")
     private String phoneNumber;
@@ -17,11 +17,11 @@ public abstract class absUser {
         return id;
     }
 
-    public @NotBlank String getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(@NotBlank String name) {
+    public void setName(String name) {
         this.name = name;
     }
 

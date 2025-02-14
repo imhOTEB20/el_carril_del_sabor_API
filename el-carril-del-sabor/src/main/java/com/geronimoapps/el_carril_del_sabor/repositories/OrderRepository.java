@@ -1,6 +1,7 @@
 package com.geronimoapps.el_carril_del_sabor.repositories;
 
 import com.geronimoapps.el_carril_del_sabor.models.Customer;
+import com.geronimoapps.el_carril_del_sabor.models.FoodOutlet;
 import com.geronimoapps.el_carril_del_sabor.models.Order;
 import com.geronimoapps.el_carril_del_sabor.models.StatusOrder;
 
@@ -13,4 +14,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByCustomerOrderByOrderDateDesc(Customer customer);
 
     List<Order> findByStatus(StatusOrder status);
+
+    List<Order> findByFoodOutletOrderByOrderDateDesc(FoodOutlet foodOutlet);
 }

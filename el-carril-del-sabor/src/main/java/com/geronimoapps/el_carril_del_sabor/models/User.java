@@ -1,7 +1,6 @@
 package com.geronimoapps.el_carril_del_sabor.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "users")
@@ -13,7 +12,6 @@ public class User {
 
     private String auth0Id;
 
-    @NotBlank
     private String email;
 
     @Enumerated
@@ -31,11 +29,11 @@ public class User {
         this.auth0Id = auth0Id;
     }
 
-    public @NotBlank String getEmail() {
+    public String getEmail() {
         return email;
     }
 
-    public void setEmail(@NotBlank String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
 

@@ -11,7 +11,6 @@ public abstract class absProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     private String name;
 
     private String description = null;
@@ -24,7 +23,6 @@ public abstract class absProduct {
     @JoinColumn(name = "modify_by", referencedColumnName = "id_admin")
     private Administrator modifyBy = null;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "food_outlet", referencedColumnName = "id_food_outlet")
     private FoodOutlet foodOutlet;
@@ -35,11 +33,11 @@ public abstract class absProduct {
         return id;
     }
 
-    public @NotNull String getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(@NotNull String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -75,11 +73,11 @@ public abstract class absProduct {
         this.modifyBy = modifyBy;
     }
 
-    public @NotNull FoodOutlet getFoodOutlet() {
+    public FoodOutlet getFoodOutlet() {
         return foodOutlet;
     }
 
-    public void setFoodOutlet(@NotNull FoodOutlet foodOutlet) {
+    public void setFoodOutlet(FoodOutlet foodOutlet) {
         this.foodOutlet = foodOutlet;
     }
 
