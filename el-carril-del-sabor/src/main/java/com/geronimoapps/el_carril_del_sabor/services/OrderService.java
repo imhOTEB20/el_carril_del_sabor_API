@@ -1,10 +1,9 @@
 package com.geronimoapps.el_carril_del_sabor.services;
 
+import com.geronimoapps.el_carril_del_sabor.dtos.DTOOrderRequest;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTOOrderResponse;
 import com.geronimoapps.el_carril_del_sabor.models.*;
-import com.geronimoapps.el_carril_del_sabor.repositories.AdminRegisterRepository;
-import com.geronimoapps.el_carril_del_sabor.repositories.AdministratorRepository;
-import com.geronimoapps.el_carril_del_sabor.repositories.OrderRepository;
+import com.geronimoapps.el_carril_del_sabor.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,50 +15,64 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final AdministratorRepository administratorRepository;
     private final AdminRegisterRepository adminRegisterRepository;
+    private final CustomerRepository customerRepository;
+    private final FoodOutletRepository foodOutletRepository;
+
+    private final ProductService productService;
 
     @Autowired
     public OrderService (OrderRepository orderRepository,
-                         AdministratorRepository administratorRepository,
-                         AdminRegisterRepository adminRegisterRepository) {
+                         AdminRegisterRepository adminRegisterRepository,
+                         CustomerRepository customerRepository,
+                         FoodOutletRepository foodOutletRepository,
+                         ProductService productService) {
+
         this.orderRepository = orderRepository;
-        this.administratorRepository = administratorRepository;
         this.adminRegisterRepository = adminRegisterRepository;
+        this.customerRepository = customerRepository;
+        this.foodOutletRepository = foodOutletRepository;
+
+        this.productService = productService;
     }
 
     @Transactional
-    public void acceptOrder(Order order, User user) {
-        if (order.getStatus() ==  StatusOrder.PENDING) {
-            var admin = administratorRepository.findByUser(user)
-                    .orElseThrow(() -> new RuntimeException("The user is not an administrator."));
-            order.setStatus(StatusOrder.ACCEPTED);
-            var register = new AdminRegister();
-            register.setAction(AdminActions.ACCEPT_ORDER);
-            register.setReferenceCode(order.getId());
-            register.setAdministrator(admin);
+    public void acceptOrder(Order order, Administrator admin) {
+        if (admin.getFoodOutlet().getId().equals(order.getFoodOutlet().getId())) {
+            if (order.getStatus() ==  StatusOrder.PENDING) {
+                order.setStatus(StatusOrder.ACCEPTED);
+                var register = new AdminRegister();
+                register.setAction(AdminActions.ACCEPT_ORDER);
+                register.setReferenceCode(order.getId());
+                register.setAdministrator(admin);
 
-            this.orderRepository.save(order);
-            this.adminRegisterRepository.save(register);
+                this.orderRepository.save(order);
+                this.adminRegisterRepository.save(register);
 
-        } throw new RuntimeException("Only pending orders can be accepted.");
+            } throw new RuntimeException("Only pending orders can be accepted.");
+        } else {
+            throw new RuntimeException("The administrator does not have permissions on this order.");
+        }
     }
 
     @Transactional
-    public void rejectOrder(Order order, User user) {
-        if (order.getStatus() ==  StatusOrder.PENDING) {
-            var admin = administratorRepository.findByUser(user)
-                    .orElseThrow(() -> new RuntimeException("The user is not an administrator."));
-            order.setStatus(StatusOrder.REJECTED);
-            var register = new AdminRegister();
-            register.setAction(AdminActions.REJECT_ORDER);
-            register.setReferenceCode(order.getId());
-            register.setAdministrator(admin);
+    public void rejectOrder(Order order, Administrator admin) {
+        if(admin.getFoodOutlet().getId().equals(order.getFoodOutlet().getId())) {
+            if (order.getStatus() ==  StatusOrder.PENDING) {
 
-            this.orderRepository.save(order);
-            this.adminRegisterRepository.save(register);
+                order.setStatus(StatusOrder.REJECTED);
+                var register = new AdminRegister();
+                register.setAction(AdminActions.REJECT_ORDER);
+                register.setReferenceCode(order.getId());
+                register.setAdministrator(admin);
 
-        } throw new RuntimeException("Only pending orders can be accepted.");
+                this.orderRepository.save(order);
+                this.adminRegisterRepository.save(register);
+
+            } throw new RuntimeException("Only pending orders can be accepted.");
+        } else {
+            throw new RuntimeException("The administrator does not have permissions on this order.");
+        }
     }
 
     public DTOOrderResponse getOrderById(Long id) {
@@ -83,10 +96,7 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public List<DTOOrderResponse> getOrdersReady(User user) {
-        var admin = this.administratorRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("The user is not an administrator."));
-
+    public List<DTOOrderResponse> getOrdersReady(Administrator admin) {
         return this.orderRepository.findByFoodOutletOrderByOrderDateDesc(admin.getFoodOutlet())
                 .stream()
                 .filter(order -> order.getStatus() == StatusOrder.READY)
@@ -94,14 +104,69 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public List<DTOOrderResponse> getOrderPending(User user) {
-        var admin = this.administratorRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("The user is not an administrator."));
-
+    public List<DTOOrderResponse> getOrderPending(Administrator admin) {
         return this.orderRepository.findByFoodOutletOrderByOrderDateDesc(admin.getFoodOutlet())
                 .stream()
                 .filter(order -> order.getStatus() == StatusOrder.PENDING)
                 .map(DTOOrderResponse::new)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public DTOOrderResponse createOrder(User user, Long idFoodOutlet, DTOOrderRequest orderData) {
+        var customer = this.customerRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("The user is not an customer."));
+
+        var foodOutlet = this.foodOutletRepository.findById(idFoodOutlet)
+                .orElseThrow(() -> new RuntimeException("Food Outlet id is not found."));
+
+        var order = new Order();
+        //setting order
+        order.setDeliveryAddress(orderData.delivery_address() != null
+            ? orderData.delivery_address() : customer.getAddress());
+        order.setPaymentMethod(orderData.payment_method());
+        order.setFoodOutlet(foodOutlet);
+        order.setStatus(StatusOrder.PENDING);
+        //setting ordered product
+        var orderedProducts = orderData.ordered_products()
+                .stream()
+                .map(orderedProduct -> {
+                    var orderDetail = new OrderDetail();
+
+                    orderDetail.setOrder(order);
+                    orderDetail.setDetails(orderedProduct.details());
+                    orderDetail.setQuantity(orderedProduct.quantity());
+                    switch (orderedProduct.product().type()) {
+                        case DISH -> {
+                            orderDetail.setDish((Dish) this.productService.getProductByRequest(orderedProduct.product()));
+                            orderDetail.setPromotion(null);
+                        }
+                        case PRODUCT -> {
+                            orderDetail.setPromotion((Promotion) this.productService.getProductByRequest(orderedProduct.product()));
+                            orderDetail.setDish(null);
+                        }
+                        default -> throw new RuntimeException("Product type is not available.");
+                    }
+                    return orderDetail;
+                }).collect(Collectors.toSet());
+        //add order details to order
+        order.setOrderDetails(orderedProducts);
+
+        return new DTOOrderResponse(this.orderRepository.save(order));
+    }
+
+    public void cancelOrder (User user, Long orderCod) {
+        var customer = this.customerRepository.findByUser(user)
+                .orElseThrow(() -> new RuntimeException("The user is not an customer."));
+
+        var order = this.orderRepository.findById(orderCod)
+                .orElseThrow(() -> new RuntimeException("Order id is not found."));
+
+        if (order.getCustomer().getId().equals(customer.getId())) {
+            order.setStatus(StatusOrder.CANCELED);
+            this.orderRepository.save(order);
+        } else throw new RuntimeException("The customer does not have permission to cancel the order.");
+    }
+
+
 }

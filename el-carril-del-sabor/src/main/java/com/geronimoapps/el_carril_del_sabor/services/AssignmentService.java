@@ -13,36 +13,35 @@ public class AssignmentService {
 
     private final AssignmentRepository assignmentRepository;
     private final AdminRegisterRepository adminRegisterRepository;
-    private final AdministratorRepository administratorRepository;
 
     @Autowired
     public AssignmentService (AssignmentRepository assignmentRepository,
-                              AdminRegisterRepository adminRegisterRepository,
-                              AdministratorRepository administratorRepository) {
+                              AdminRegisterRepository adminRegisterRepository) {
         this.assignmentRepository = assignmentRepository;
         this.adminRegisterRepository = adminRegisterRepository;
-        this.administratorRepository = administratorRepository;
     }
 
     @Transactional
-    public Assignment createAssignment(Order order, DeliveryDriver delivery, User user) {
-        if (order.getStatus() == StatusOrder.READY) {
-            var admin = this.administratorRepository.findByUser(user)
-                    .orElseThrow(() -> new RuntimeException("The user is not an administrator."));
-            var newAssignment = new Assignment();
-            newAssignment.setDeliveryAssigned(delivery);
-            newAssignment.setAssignedBy(admin);
-            newAssignment.setOrder(order);
+    public Assignment createAssignment(Order order, DeliveryDriver delivery, Administrator admin) {
+        if (admin.getFoodOutlet().getId().equals(order.getFoodOutlet().getId())) {
+            if (order.getStatus() == StatusOrder.READY) {
+                var newAssignment = new Assignment();
+                newAssignment.setDeliveryAssigned(delivery);
+                newAssignment.setAssignedBy(admin);
+                newAssignment.setOrder(order);
 
-            var register = new AdminRegister();
-            register.setAction(AdminActions.ASSIGN_DELIVERY);
-            register.setReferenceCode(order.getId());
-            register.setAdministrator(admin);
-            this.adminRegisterRepository.save(register);
+                var register = new AdminRegister();
+                register.setAction(AdminActions.ASSIGN_DELIVERY);
+                register.setReferenceCode(order.getId());
+                register.setAdministrator(admin);
+                this.adminRegisterRepository.save(register);
 
-            return this.assignmentRepository.save(newAssignment);
+                return this.assignmentRepository.save(newAssignment);
+            } else {
+                throw new RuntimeException("order is not ready.");
+            }
         } else {
-            throw new RuntimeException("order is not ready.");
+            throw new RuntimeException("The administrator does not have permissions on this order.");
         }
     }
 }

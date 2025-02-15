@@ -42,14 +42,14 @@ public class AdministratorService {
 
     public DTOAssignmentResponse assignAnOrder(Order order, DeliveryDriver delivery, User user) {
         return new DTOAssignmentResponse(
-                this.assignmentService.createAssignment(order, delivery, user)
+                this.assignmentService.createAssignment(order, delivery, this.findAdministratorByUser(user))
         );
     }
 
     public DTOConfirmationOfChangeInOrderStatus changeOrderStatus(Order order, User user, StatusOrder newStatus) {
         switch (newStatus) {
-            case ACCEPTED -> this.orderService.acceptOrder(order, user);
-            case REJECTED -> this.orderService.rejectOrder(order, user);
+            case ACCEPTED -> this.orderService.acceptOrder(order, this.findAdministratorByUser(user));
+            case REJECTED -> this.orderService.rejectOrder(order, this.findAdministratorByUser(user));
             default -> throw new RuntimeException("The administrator can only accept or reject orders");
         }
 
@@ -57,6 +57,6 @@ public class AdministratorService {
     }
 
     public void toggleAvailableProduct(absProduct product, User user) {
-        this.productService.toggleAvailable(product, user);
+        this.productService.toggleAvailable(product, this.findAdministratorByUser(user));
     }
 }

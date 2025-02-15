@@ -26,12 +26,14 @@ public class Order {
     @Enumerated
     private PaymentMethod paymentMethod;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     Set<OrderDetail> orderDetails;
 
     @ManyToOne
     @JoinColumn(name = "food_outlet", referencedColumnName = "id_food_outlet")
     private FoodOutlet foodOutlet;
+
+    private LocalDateTime orderDate = LocalDateTime.now();
 
     public Set<OrderDetail> getOrderDetails() {
         return orderDetails;
@@ -48,8 +50,6 @@ public class Order {
     public void setFoodOutlet(FoodOutlet foodOutlet) {
         this.foodOutlet = foodOutlet;
     }
-
-    private LocalDateTime orderDate = LocalDateTime.now();
 
     public Long getId() {
         return id;
