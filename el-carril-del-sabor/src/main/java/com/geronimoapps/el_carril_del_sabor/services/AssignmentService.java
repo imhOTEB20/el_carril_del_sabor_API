@@ -1,8 +1,9 @@
 package com.geronimoapps.el_carril_del_sabor.services;
 
+import com.geronimoapps.el_carril_del_sabor.exceptions.AdministratorDoesNotPermissionsException;
+import com.geronimoapps.el_carril_del_sabor.exceptions.StatusOrderNotValid;
 import com.geronimoapps.el_carril_del_sabor.models.*;
 import com.geronimoapps.el_carril_del_sabor.repositories.AdminRegisterRepository;
-import com.geronimoapps.el_carril_del_sabor.repositories.AdministratorRepository;
 import com.geronimoapps.el_carril_del_sabor.repositories.AssignmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,10 +39,10 @@ public class AssignmentService {
 
                 return this.assignmentRepository.save(newAssignment);
             } else {
-                throw new RuntimeException("order is not ready.");
+                throw new StatusOrderNotValid("Order is not ready.");
             }
         } else {
-            throw new RuntimeException("The administrator does not have permissions on this order.");
+            throw new AdministratorDoesNotPermissionsException("The administrator does not have permissions on this order.");
         }
     }
 }

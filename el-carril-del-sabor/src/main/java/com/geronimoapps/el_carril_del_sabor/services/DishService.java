@@ -3,6 +3,8 @@ package com.geronimoapps.el_carril_del_sabor.services;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTODishRequest;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTODishUpdateRequest;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTODishResponse;
+import com.geronimoapps.el_carril_del_sabor.exceptions.ResourceNotFoundException;
+import com.geronimoapps.el_carril_del_sabor.exceptions.UserIsNotAnAdministrator;
 import com.geronimoapps.el_carril_del_sabor.models.Dish;
 import com.geronimoapps.el_carril_del_sabor.models.User;
 import com.geronimoapps.el_carril_del_sabor.repositories.AdministratorRepository;
@@ -27,10 +29,10 @@ public class DishService {
     @Transactional
     public DTODishResponse editDish(Long idDish, DTODishUpdateRequest dishData, User user) {
         var admin = this.administratorRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("The user is not an Administrator."));
+                .orElseThrow(() -> new UserIsNotAnAdministrator(user.getId()));
 
         var dish = this.dishRepository.findById(idDish)
-                .orElseThrow(() -> new RuntimeException("Dish id is not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Dish id:"+idDish+" is not found"));
 
         if(admin.getFoodOutlet().getId().equals(dish.getFoodOutlet().getId())) {
             if (dishData.name() != null) dish.setName(dishData.name());
@@ -46,7 +48,7 @@ public class DishService {
     @Transactional
     public DTODishResponse createDish(DTODishRequest dishData, User user) {
         var admin = this.administratorRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("The user is not an Administrator."));
+                .orElseThrow(() -> new UserIsNotAnAdministrator(user.getId()));
 
         var dish = new Dish();
         //No Null variables
