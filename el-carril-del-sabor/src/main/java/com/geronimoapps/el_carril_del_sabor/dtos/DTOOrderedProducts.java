@@ -1,11 +1,13 @@
 package com.geronimoapps.el_carril_del_sabor.dtos;
 
 import com.geronimoapps.el_carril_del_sabor.models.OrderDetail;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record DTOOrderedProducts(
-        iDTOProduct product,
+        @NotBlank iDTOProduct product,
         String details,
-        Short quantity
+        @NotNull Short quantity
 ) {
     public DTOOrderedProducts(OrderDetail orderDetail) {
         this(

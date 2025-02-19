@@ -1,15 +1,11 @@
 package com.geronimoapps.el_carril_del_sabor.dtos;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
 import java.sql.Blob;
 
-public record DTODishRequest(
-        @NotBlank
+public record DTODishUpdateRequest(
         String name,
         String description,
-        @NotNull
+        Boolean available,
         Float price,
         Blob img
 ) {

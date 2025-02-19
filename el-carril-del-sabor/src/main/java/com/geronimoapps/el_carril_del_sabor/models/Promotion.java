@@ -12,7 +12,7 @@ public class Promotion extends absProduct {
     @Enumerated
     private PromotionType type;
 
-    @OneToMany(mappedBy = "promotion")
+    @OneToMany(mappedBy = "promotion", cascade = CascadeType.ALL)
     Set<Combo> combos;
 
     private Float minimumAmount = null;
