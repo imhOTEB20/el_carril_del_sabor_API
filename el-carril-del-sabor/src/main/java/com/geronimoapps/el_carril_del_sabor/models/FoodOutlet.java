@@ -1,8 +1,6 @@
 package com.geronimoapps.el_carril_del_sabor.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -15,84 +13,77 @@ public class FoodOutlet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
     private String name;
 
-    @NotBlank
     private String address;
 
-    @NotBlank
     private String phoneNumber;
 
-    @NotNull
     private LocalDateTime morningOpeningHours;
 
-    @NotNull
     private LocalDateTime morningClosingHours;
 
-    @NotNull
     private LocalDateTime eveningOpeningHours;
 
-    @NotNull
     private LocalDateTime eveningClosingHours;
 
     public Long getId() {
         return id;
     }
 
-    public @NotBlank String getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(@NotBlank String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public @NotBlank String getAddress() {
+    public String getAddress() {
         return address;
     }
 
-    public void setAddress(@NotBlank String address) {
+    public void setAddress(String address) {
         this.address = address;
     }
 
-    public @NotBlank String getPhoneNumber() {
+    public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(@NotBlank String phoneNumber) {
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
-    public @NotNull LocalDateTime getMorningOpeningHours() {
+    public LocalDateTime getMorningOpeningHours() {
         return morningOpeningHours;
     }
 
-    public void setMorningOpeningHours(@NotNull LocalDateTime morningOpeningHours) {
+    public void setMorningOpeningHours(LocalDateTime morningOpeningHours) {
         this.morningOpeningHours = morningOpeningHours;
     }
 
-    public @NotNull LocalDateTime getMorningClosingHours() {
+    public LocalDateTime getMorningClosingHours() {
         return morningClosingHours;
     }
 
-    public void setMorningClosingHours(@NotNull LocalDateTime morningClosingHours) {
+    public void setMorningClosingHours(LocalDateTime morningClosingHours) {
         this.morningClosingHours = morningClosingHours;
     }
 
-    public @NotNull LocalDateTime getEveningOpeningHours() {
+    public LocalDateTime getEveningOpeningHours() {
         return eveningOpeningHours;
     }
 
-    public void setEveningOpeningHours(@NotNull LocalDateTime eveningOpeningHours) {
+    public void setEveningOpeningHours(LocalDateTime eveningOpeningHours) {
         this.eveningOpeningHours = eveningOpeningHours;
     }
 
-    public @NotNull LocalDateTime getEveningClosingHours() {
+    public LocalDateTime getEveningClosingHours() {
         return eveningClosingHours;
     }
 
-    public void setEveningClosingHours(@NotNull LocalDateTime eveningClosingHours) {
+    public void setEveningClosingHours(LocalDateTime eveningClosingHours) {
         this.eveningClosingHours = eveningClosingHours;
     }
 }

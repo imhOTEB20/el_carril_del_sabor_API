@@ -1,7 +1,6 @@
 package com.geronimoapps.el_carril_del_sabor.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
 
@@ -13,8 +12,10 @@ public class AdminRegister {
     @Column(name = "id_admin_register")
     private Long id;
 
-    @NotBlank
-    private String action;
+    @Enumerated
+    private AdminActions action;
+
+    private Long referenceCode;
 
     private LocalDateTime date = LocalDateTime.now();
 
@@ -26,11 +27,19 @@ public class AdminRegister {
         return id;
     }
 
-    public @NotBlank String getAction() {
+    public AdminActions getAction() {
         return action;
     }
 
-    public void setAction(@NotBlank String action) {
+    public Long getReferenceCode() {
+        return referenceCode;
+    }
+
+    public void setReferenceCode(Long referenceCode) {
+        this.referenceCode = referenceCode;
+    }
+
+    public void setAction(AdminActions action) {
         this.action = action;
     }
 

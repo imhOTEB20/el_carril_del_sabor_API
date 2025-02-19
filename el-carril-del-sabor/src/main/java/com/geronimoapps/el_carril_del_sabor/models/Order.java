@@ -1,9 +1,9 @@
 package com.geronimoapps.el_carril_del_sabor.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "orders")
@@ -18,7 +18,6 @@ public class Order {
     @JoinColumn(name = "customer", referencedColumnName = "id_customer")
     private Customer customer;
 
-    @NotBlank
     private String deliveryAddress;
 
     @Enumerated
@@ -27,7 +26,30 @@ public class Order {
     @Enumerated
     private PaymentMethod paymentMethod;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    Set<OrderDetail> orderDetails;
+
+    @ManyToOne
+    @JoinColumn(name = "food_outlet", referencedColumnName = "id_food_outlet")
+    private FoodOutlet foodOutlet;
+
     private LocalDateTime orderDate = LocalDateTime.now();
+
+    public Set<OrderDetail> getOrderDetails() {
+        return orderDetails;
+    }
+
+    public void setOrderDetails(Set<OrderDetail> orderDetails) {
+        this.orderDetails = orderDetails;
+    }
+
+    public FoodOutlet getFoodOutlet() {
+        return foodOutlet;
+    }
+
+    public void setFoodOutlet(FoodOutlet foodOutlet) {
+        this.foodOutlet = foodOutlet;
+    }
 
     public Long getId() {
         return id;
@@ -41,11 +63,11 @@ public class Order {
         this.customer = customer;
     }
 
-    public @NotBlank String getDeliveryAddress() {
+    public String getDeliveryAddress() {
         return deliveryAddress;
     }
 
-    public void setDeliveryAddress(@NotBlank String deliveryAddress) {
+    public void setDeliveryAddress(String deliveryAddress) {
         this.deliveryAddress = deliveryAddress;
     }
 
