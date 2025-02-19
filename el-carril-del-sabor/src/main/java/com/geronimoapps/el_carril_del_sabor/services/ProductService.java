@@ -5,6 +5,9 @@ import com.geronimoapps.el_carril_del_sabor.dtos.DTOProductRequest;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTOPromotionResponse;
 import com.geronimoapps.el_carril_del_sabor.dtos.iDTOProduct;
 
+import com.geronimoapps.el_carril_del_sabor.exceptions.AdministratorDoesNotPermissionsException;
+import com.geronimoapps.el_carril_del_sabor.exceptions.ProductTypeNotAvailable;
+import com.geronimoapps.el_carril_del_sabor.exceptions.ResourceNotFoundException;
 import com.geronimoapps.el_carril_del_sabor.models.*;
 
 import com.geronimoapps.el_carril_del_sabor.repositories.AdminRegisterRepository;
@@ -43,7 +46,7 @@ public class ProductService {
         } else if (product instanceof Promotion) {
             this.promotionRepository.save((Promotion) product);
         } else {
-            throw new RuntimeException("Product is not a valid entity");
+            throw new ProductTypeNotAvailable("Product is not a valid entity");
         }
     }
 
@@ -65,7 +68,7 @@ public class ProductService {
 
             this.saveProduct(product);
         } else {
-            throw new RuntimeException("The administrator does not have permissions for this product.");
+            throw new AdministratorDoesNotPermissionsException("The administrator does not have permissions for this product.");
         }
     }
 
@@ -73,13 +76,13 @@ public class ProductService {
         return switch (productData.type()) {
             case DISH -> {
                 yield this.dishRepository.findById(productData.product_cod())
-                        .orElseThrow(() -> new RuntimeException("Dish id is not found."));
+                        .orElseThrow(() -> new ResourceNotFoundException("Dish id:" + productData.product_cod() + " is not found."));
             }
             case PRODUCT -> {
                 yield this.promotionRepository.findById(productData.product_cod())
-                        .orElseThrow(() -> new RuntimeException("Promotion id is not found."));
+                        .orElseThrow(() -> new ResourceNotFoundException("Promotion id:" + productData.product_cod() + " is not found."));
             }
-            default -> throw new RuntimeException("Product category is not available.");
+            default -> throw new ProductTypeNotAvailable("Product category is not available.");
         };
     }
 

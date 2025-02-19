@@ -2,6 +2,7 @@ package com.geronimoapps.el_carril_del_sabor.services;
 
 import com.geronimoapps.el_carril_del_sabor.dtos.DTOOrderRequest;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTOOrderResponse;
+import com.geronimoapps.el_carril_del_sabor.exceptions.*;
 import com.geronimoapps.el_carril_del_sabor.models.*;
 import com.geronimoapps.el_carril_del_sabor.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,9 +50,9 @@ public class OrderService {
                 this.orderRepository.save(order);
                 this.adminRegisterRepository.save(register);
 
-            } throw new RuntimeException("Only pending orders can be accepted.");
+            } throw new StatusOrderNotValid("Only pending orders can be accepted.");
         } else {
-            throw new RuntimeException("The administrator does not have permissions on this order.");
+            throw new AdministratorDoesNotPermissionsException("The administrator does not have permissions on this order.");
         }
     }
 
@@ -69,15 +70,15 @@ public class OrderService {
                 this.orderRepository.save(order);
                 this.adminRegisterRepository.save(register);
 
-            } throw new RuntimeException("Only pending orders can be accepted.");
+            } throw new StatusOrderNotValid("Only pending orders can be rejected.");
         } else {
-            throw new RuntimeException("The administrator does not have permissions on this order.");
+            throw new AdministratorDoesNotPermissionsException("The administrator does not have permissions on this order.");
         }
     }
 
-    public DTOOrderResponse getOrderById(Long id) {
-        var order = this.orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order id is not found."));
+    public DTOOrderResponse getOrderById(Long idOrder) {
+        var order = this.orderRepository.findById(idOrder)
+                .orElseThrow(() -> new ResourceNotFoundException("Order:" + idOrder + " id is not found."));
 
         return new DTOOrderResponse(order);
     }
@@ -115,10 +116,10 @@ public class OrderService {
     @Transactional
     public DTOOrderResponse createOrder(User user, Long idFoodOutlet, DTOOrderRequest orderData) {
         var customer = this.customerRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("The user is not an customer."));
+                .orElseThrow(() -> new UserIsNotACustomer(user.getId()));
 
         var foodOutlet = this.foodOutletRepository.findById(idFoodOutlet)
-                .orElseThrow(() -> new RuntimeException("Food Outlet id is not found."));
+                .orElseThrow(() -> new ResourceNotFoundException("Food Outlet id:" + idFoodOutlet +"is not found."));
 
         var order = new Order();
         //setting order
@@ -145,7 +146,7 @@ public class OrderService {
                             orderDetail.setPromotion((Promotion) this.productService.getProductByRequest(orderedProduct.product()));
                             orderDetail.setDish(null);
                         }
-                        default -> throw new RuntimeException("Product type is not available.");
+                        default -> throw new ProductTypeNotAvailable(orderedProduct.product().type() + " is not available.");
                     }
                     return orderDetail;
                 }).collect(Collectors.toSet());
@@ -155,17 +156,17 @@ public class OrderService {
         return new DTOOrderResponse(this.orderRepository.save(order));
     }
 
-    public void cancelOrder (User user, Long orderCod) {
+    public void cancelOrder (User user, Long idOrder) {
         var customer = this.customerRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("The user is not an customer."));
+                .orElseThrow(() -> new UserIsNotACustomer(user.getId()));
 
-        var order = this.orderRepository.findById(orderCod)
-                .orElseThrow(() -> new RuntimeException("Order id is not found."));
+        var order = this.orderRepository.findById(idOrder)
+                .orElseThrow(() -> new ResourceNotFoundException("Order id:" + idOrder + "is not found."));
 
         if (order.getCustomer().getId().equals(customer.getId())) {
             order.setStatus(StatusOrder.CANCELED);
             this.orderRepository.save(order);
-        } else throw new RuntimeException("The customer does not have permission to cancel the order.");
+        } else throw new CustomerDoesNotPermissionsException("The customer does not have permission to cancel the order.");
     }
 
 

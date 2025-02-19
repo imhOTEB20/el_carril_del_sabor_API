@@ -3,6 +3,8 @@ package com.geronimoapps.el_carril_del_sabor.services;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTOAdministratorResponse;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTOAssignmentResponse;
 import com.geronimoapps.el_carril_del_sabor.dtos.DTOConfirmationOfChangeInOrderStatus;
+import com.geronimoapps.el_carril_del_sabor.exceptions.AdministratorDoesNotPermissionsException;
+import com.geronimoapps.el_carril_del_sabor.exceptions.UserIsNotAnAdministrator;
 import com.geronimoapps.el_carril_del_sabor.models.*;
 import com.geronimoapps.el_carril_del_sabor.repositories.AdministratorRepository;
 
@@ -33,7 +35,7 @@ public class AdministratorService {
 
     public Administrator findAdministratorByUser(User user) {
         return this.administratorRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("The user is not an administrator."));
+                .orElseThrow(() -> new UserIsNotAnAdministrator(user.getId()));
     }
 
     public DTOAdministratorResponse getAdministrator(User user) {
@@ -50,7 +52,7 @@ public class AdministratorService {
         switch (newStatus) {
             case ACCEPTED -> this.orderService.acceptOrder(order, this.findAdministratorByUser(user));
             case REJECTED -> this.orderService.rejectOrder(order, this.findAdministratorByUser(user));
-            default -> throw new RuntimeException("The administrator can only accept or reject orders");
+            default -> throw new AdministratorDoesNotPermissionsException("The administrator can only accept or reject orders");
         }
 
         return new DTOConfirmationOfChangeInOrderStatus(order.getId(), newStatus);
